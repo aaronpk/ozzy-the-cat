@@ -374,12 +374,27 @@ static void moveBoxes(void)
         pBox->y += pBox->vy;
         pBox->vy++;
 
-        if (pBox->x < coord(4)) {
-            pBox->x = coord(4);
-            pBox->vx = -pBox->vx * 3 / 4;
-        } else if (pBox->x > coord(124)) {
-            pBox->x = coord(124);
-            pBox->vx = -pBox->vx * 3 / 4;
+        // Keep tokens in the view (bounce off walls)
+        // only if there are 16 or fewer tokens on the screen
+        if(boxCnt <= 16) {
+          if (pBox->x < coord(4)) {
+              pBox->x = coord(4);
+              pBox->vx = -pBox->vx * 3 / 4;
+          } else if (pBox->x > coord(124)) {
+              pBox->x = coord(124);
+              pBox->vx = -pBox->vx * 3 / 4;
+          }
+        } else {
+          // If the boxes go off the edge of the screen, remove them
+          if (pBox->x < coord(4)) {
+            pBox->x = -1;
+            pBox->y = 71;
+            boxCnt--;
+          } else if(pBox->x > coord(124)) {
+            pBox->x = -1;
+            pBox->y = 71;
+            boxCnt--;
+          }
         }
 
         int gap = pBox->x - coord(catX);
