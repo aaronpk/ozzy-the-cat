@@ -240,6 +240,10 @@ bool updateGame(void)
             toDraw = true;
             dprintln("Resume");
         }
+        if (arduboy.buttonDown(DOWN_BUTTON)) {
+          // Abort immediately and return to title screen
+          return true;
+        }
         return false;
     }
 
