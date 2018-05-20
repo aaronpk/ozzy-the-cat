@@ -2,6 +2,9 @@
 
 Move the cat to catch as many OAuth tokens as you can in 2 minutes
 
+![Gameplay Demo](gameplay-short.gif)
+
+[View on YouTube](https://youtu.be/zFncT_siSMI)
 
 ## Changelog
 
