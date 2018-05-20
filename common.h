@@ -6,9 +6,9 @@
 /*  Defines  */
 
 //#define DEBUG
-#define APP_TITLE       "CHRI-BOCCHI CAT"
-#define APP_INFO        "OBN-Y03 VER 0.03"
-#define APP_RELEASED    "DECEMBER 2017"
+#define APP_TITLE       "OZZY THE CAT"
+#define APP_INFO        "OZY-CAT VER 0.04"
+#define APP_RELEASED    "MAY 2018"
 
 /*  Typedefs  */
 
@@ -33,6 +33,14 @@ void drawGame(void);
 /*  Global Variables  */
 
 extern MyArduboy arduboy;
+
+PROGMEM static const byte soundMeow[] = {
+    0x90, 117, 0, 30,
+    0x90, 116, 0, 30,
+    0x90, 115, 0, 30,
+    0x90, 113, 0, 40, 0x80, 0xF0
+};
+
 
 /*  For Debugging  */
 
