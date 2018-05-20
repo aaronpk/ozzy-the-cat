@@ -38,13 +38,15 @@ static bool handleButtons(void);
 static void setSound(bool enabled);
 static void playSound1(void);
 static void playSound2(void);
+static void playSound3(void);
+static void playSoundUp(void);
 static void readRecord(void);
 
 static void drawTitleMenu(void);
 static void drawTitleRecord(void);
 static void drawTitleCredit(void);
 
-/*  Local Variables  */
+static void resetHighScores(void);
 
 /*  Local Variables  */
 
@@ -67,6 +69,8 @@ static uint16_t hiScore[10];
 static uint16_t playCount;
 static uint32_t playFrames;
 
+static uint8_t  resetScoresCount = 0;
+
 /*---------------------------------------------------------------------------*/
 /*                              Main Functions                               */
 /*---------------------------------------------------------------------------*/
@@ -87,6 +91,24 @@ bool updateTitle(void)
     bool ret = false;
     if (state == STATE_MENU) {
         ret = handleButtons();
+    } else if(state == STATE_RECORD) {
+      // On the high scores screen, if you press RIGHT 10 times, it resets the high scores
+      if (arduboy.buttonDown(RIGHT_BUTTON)) {
+          if(resetScoresCount < 10) {
+              playSoundUp();
+              resetScoresCount++;
+          } else {
+              playSound3();
+              resetScoresCount = 0;
+              resetHighScores();
+          }
+          toDraw = true;
+      }
+      if (arduboy.buttonDown(A_BUTTON | B_BUTTON)) {
+          state = STATE_MENU;
+          playSound2();
+          toDraw = true;
+      }
     } else {
         if (arduboy.buttonDown(A_BUTTON | B_BUTTON)) {
             state = STATE_MENU;
@@ -133,7 +155,7 @@ uint8_t setLastScore(int score, uint32_t frames)
 {
     lastScore = score;
 
-    /*  Updarte best 10  */
+    /*  Update best 10  */
     int r = 10;
     uint16_t h;
     while (r > 0 && (h = hiScore[r - 1]) < score) {
@@ -167,6 +189,21 @@ uint8_t setLastScore(int score, uint32_t frames)
     return r;
 }
 
+void resetHighScores() 
+{
+    arduboy.eepSeek(EEPROM_ADDR_BASE);
+    for (int i = 0; i < 8; i++) {
+        arduboy.eepWrite32(0);
+    }
+    recordState = RECORD_INITIAL;
+    dprintln("Clean EEPROM");
+
+    readRecord();
+    lastScore = 0;
+
+    state = STATE_MENU;
+}
+
 /*---------------------------------------------------------------------------*/
 /*                             Control Functions                             */
 /*---------------------------------------------------------------------------*/
@@ -197,6 +234,7 @@ static bool handleButtons()
         case MENU_RECORD:
             state = STATE_RECORD;
             playSound2();
+            resetScoresCount = 0;
             break;
         case MENU_CREDIT:
             state = STATE_CREDIT;
@@ -226,6 +264,17 @@ static void playSound1(void)
 static void playSound2(void)
 {
     arduboy.tunes.tone(587, 20);
+}
+
+static void playSoundUp(void)
+{
+    arduboy.tunes.tone(587 + (resetScoresCount * 30), 20);
+}
+
+static void playSound3(void)
+{
+    arduboy.tunes.tone(554, 20);
+    arduboy.playScore2(soundMeow, 2);
 }
 
 static void readRecord(void)
