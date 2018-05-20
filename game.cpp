@@ -60,6 +60,8 @@ static int  drawFigure(int16_t x, int16_t y, int value, uint8_t align);
 
 /*  Local Variables  */
 
+#define BOXW 12
+
 PROGMEM static const uint8_t imgBox[4][24] = { // 12x12 x4
     {0xf0, 0xc, 0x6, 0x2, 0xe1, 0x79, 0x79, 0xe1, 0x2, 0x6, 0xc, 0xf0, 0x00, 0x3, 0x6, 0x4, 0x9, 0x8, 0x8, 0x9, 0x4, 0x6, 0x3, 0x00, },
     {0xf0, 0xc, 0x6, 0x92, 0x91, 0xf1, 0xf1, 0x61, 0x62, 0x6, 0xc, 0xf0, 0x00, 0x3, 0x6, 0x4, 0x8, 0x8, 0x8, 0x8, 0x4, 0x6, 0x3, 0x00, },
@@ -397,12 +399,15 @@ static void moveBoxes(void)
           }
         }
 
+        // Check if the boxes intersect the cat, only while gameplay is running (timer > 0)
+        // and only when the boxes are at the bottom of the screen
         int gap = pBox->x - coord(catX);
-        if (timer > 0 && pBox->y >= coord(60) && lastY < coord(60) && abs(gap) <= coord(10)) {
+        if (timer > 0 && pBox->y >= coord(60) && lastY < coord(60) && abs(gap) <= coord(BOXW)) {
             boundBox(pBox, coordInv(gap));
             isBound = true;
             score++;
         } else if (pBox->y > coord(70)) {
+            // Remove the boxes when they fall off the bottom of the screen
             pBox->x = -1;
             boxCnt--;
         }
