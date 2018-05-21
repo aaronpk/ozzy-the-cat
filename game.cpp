@@ -508,7 +508,7 @@ static void drawBoxes(void)
         if (pBox->x < 0) continue;
         int16_t x = coordInv(pBox->x) - 4;
         int16_t y = coordInv(pBox->y) - 4;
-        int8_t anim = x % 4;
+        int8_t anim = (x / 3) % 4;
         arduboy.drawBitmap(x, y, imgBox[anim], 12, 12, WHITE);
     }
 }
