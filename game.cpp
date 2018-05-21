@@ -9,6 +9,9 @@
 #define SNOWS   64
 #endif
 
+#define GAMETIME 60
+#define TURBOTOKENS 15
+
 enum {
     STATE_START = 0,
     STATE_GAME,
@@ -192,7 +195,7 @@ PROGMEM static const byte soundOver[] = {
     0x90, 51, 0, 200, 0x80, 0, 50,
     0x90, 50, 0, 220, 0x80, 0, 60,
     0x90, 49, 0, 240, 0x80, 0, 70,
-    0x90, 48, 0, 260, 0x80, 0xF0
+    0x90, 48, 0, 255, 0x80, 0xF0
 };
 
 static uint8_t  state;
@@ -312,7 +315,7 @@ static void startGame()
     state = STATE_START;
     gameFrames = 0;
     counter = secs(2);
-    timer = secs(120); // 2 minutes
+    timer = secs(GAMETIME);
     score = 0;
     arduboy.playScore2(soundStart, 0);
     dprintln("Start Game");
@@ -414,7 +417,7 @@ static void moveBoxes(void)
     }
 
     if (isBound) {
-        arduboy.tunes.tone((timer > secs(30)) ? 1440 : 1920, 15);
+        arduboy.tunes.tone((timer > secs(TURBOTOKENS)) ? 1440 : 1920, 15);
         dprint("boxCnt=");
         dprintln(boxCnt);
     }
@@ -427,7 +430,7 @@ static void boundBox(BOX *pBox, int gap)
     int8_t  vy = -pBox->vy / 2;
 
     int mul = 2;
-    if (timer > secs(30)) {
+    if (timer > secs(TURBOTOKENS)) {
         mul = 2;
         gap -= 4;
     } else {
@@ -441,7 +444,11 @@ static void boundBox(BOX *pBox, int gap)
             boxCnt++;
         }
         pBox->y = coord(60);
-        pBox->vx = vx + gap;
+        if(vx + gap < 0) {
+            pBox->vx = vx + gap - 5; // keep the tokens moving horizontally faster to avoid being able to sit on the edge to catch them all
+        } else {
+            pBox->vx = vx + gap + 5;
+        }
         pBox->vy = vy - (40 - abs(gap));
     }
 }
@@ -533,7 +540,7 @@ static void drawStrings(void)
             drawFigure(116, 0, timer % 60 / 6, ALIGN_LEFT);
         }
         if (state == STATE_GAME) {
-            if (timer <= secs(30) && timer > secs(27)) {
+            if (timer <= secs(TURBOTOKENS) && timer > secs(TURBOTOKENS - 3)) {
                 arduboy.drawBitmap(2, 16, imgFever, 124, 14, (timer % 8 < 4) ? WHITE : BLACK);
             }
         } else if (state == STATE_OVER) {
