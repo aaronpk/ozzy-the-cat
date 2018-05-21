@@ -477,7 +477,7 @@ static void boundBox(BOX *pBox, int gap)
 
         pBox->vy = vy - (40 - abs(gap));
         if(isInTurboMode()) {
-          pBox->vy -= 7;
+          pBox->vy -= 4;
         }
     }
 }
