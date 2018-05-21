@@ -13,8 +13,9 @@ Move the cat to catch as many OAuth tokens as you can in 2 minutes
 * Replaced graphics with OAuth tokens and Ozzy the cat
 * Press RIGHT 10 times on the high score list to reset EEPROM
 * When game is paused, press DOWN to immediately abort the game
-* Let tokens fall off the edge of the screen if there are more than 16. This prevents an easy hack where you can sit at the edge of the screen and build up a ridiculous number of points without moving.
-
+* Adds additional horizontal movement to prevent being able to send tokens straight up, which previously made it easy to keep them all at a wall.
+* Remove walls when there are more than 16 tokens, and bring them back when there are fewer than 12.
+* In "turbo token" mode, tokens move quicker both horizontally and vertically
 
 ## Credits
 

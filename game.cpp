@@ -10,7 +10,8 @@
 #endif
 
 #define GAMETIME 60
-#define TURBOTOKENS 15
+#define TURBOTOKENS 10
+#define MAXBOXES 16
 
 enum {
     STATE_START = 0,
@@ -199,6 +200,7 @@ PROGMEM static const byte soundOver[] = {
 };
 
 static uint8_t  state;
+static bool     hasWalls;
 static bool     toDraw;
 static uint32_t gameFrames;
 static int      counter;
@@ -295,8 +297,10 @@ void drawGame(void)
             return; // Frame skip
         }
         arduboy.clear();
-        arduboy.drawFastVLine2(0, 0, 64, WHITE);
-        arduboy.drawFastVLine2(127, 0, 64, WHITE);
+        if(hasWalls) {
+            arduboy.drawFastVLine2(0, 0, 64, WHITE);
+            arduboy.drawFastVLine2(127, 0, 64, WHITE);
+        }
         drawSnows();
         if (state != STATE_PAUSE) drawBoxes();
         drawCat();
@@ -310,9 +314,15 @@ void drawGame(void)
 /*                             Control Functions                             */
 /*---------------------------------------------------------------------------*/
 
+bool isInTurboMode() 
+{
+  return timer <= secs(TURBOTOKENS);
+}
+
 static void startGame()
 {
     state = STATE_START;
+    hasWalls = true;
     gameFrames = 0;
     counter = secs(2);
     timer = secs(GAMETIME);
@@ -381,7 +391,14 @@ static void moveBoxes(void)
 
         // Keep tokens in the view (bounce off walls)
         // only if there are 16 or fewer tokens on the screen
-        if(boxCnt <= 16) {
+        if(boxCnt > MAXBOXES) {
+          hasWalls = false;
+        }
+        if(boxCnt < MAXBOXES - 4) {
+          hasWalls = true;
+        }
+        
+        if(hasWalls) {
           if (pBox->x < coord(4)) {
               pBox->x = coord(4);
               pBox->vx = -pBox->vx * 3 / 4;
@@ -417,7 +434,7 @@ static void moveBoxes(void)
     }
 
     if (isBound) {
-        arduboy.tunes.tone((timer > secs(TURBOTOKENS)) ? 1440 : 1920, 15);
+        arduboy.tunes.tone(isInTurboMode() ? 1920 : 1440, 15);
         dprint("boxCnt=");
         dprintln(boxCnt);
     }
@@ -430,12 +447,12 @@ static void boundBox(BOX *pBox, int gap)
     int8_t  vy = -pBox->vy / 2;
 
     int mul = 2;
-    if (timer > secs(TURBOTOKENS)) {
-        mul = 2;
-        gap -= 4;
-    } else {
+    if (isInTurboMode()) {
         mul = 3;
         gap -= 8;
+    } else {
+        mul = 2;
+        gap -= 4;
     }
     for (int i = 0; i < mul; i++, gap += 8) {
         if (i > 0 && boxCnt < BOXES) {
@@ -443,13 +460,25 @@ static void boundBox(BOX *pBox, int gap)
             pBox->x = x;
             boxCnt++;
         }
+        // Start the new token at the bottom of the screen
         pBox->y = coord(60);
-        if(vx + gap < 0) {
-            pBox->vx = vx + gap - 5; // keep the tokens moving horizontally faster to avoid being able to sit on the edge to catch them all
-        } else {
-            pBox->vx = vx + gap + 5;
+
+        // keep the tokens moving horizontally faster to avoid being able to sit on the edge to catch them all
+        int8_t speedfactor = 3;
+        if(isInTurboMode()) {
+          speedfactor = 7;
         }
+        
+        if(vx + gap < 0) {
+            pBox->vx = vx + gap - speedfactor;
+        } else {
+            pBox->vx = vx + gap + speedfactor;
+        }
+
         pBox->vy = vy - (40 - abs(gap));
+        if(isInTurboMode()) {
+          pBox->vy -= 7;
+        }
     }
 }
 
